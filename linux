@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 ### end common-components/bash-shebang
 
-# Welcome to the thoughtbot laptop script! Be prepared to turn your laptop (or
+# Welcome to the VHL ruby on rails script! Be prepared to turn your laptop (or
 # desktop, no haters here) into an awesome development machine.
 
-# This file is auto-generated. Do not edit it by hand unless you know what
-# you're doing. Please see 'CONTRIBUTING.md' for more information.
+# This file is hand generated. Expect errors.
+
 ### end common-components/header
 
 trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
@@ -15,10 +15,6 @@ set -e
 
 if [[ ! -d "$HOME/.bin/" ]]; then
   mkdir "$HOME/.bin"
-fi
-
-if [ ! -f "$HOME/.zshrc" ]; then
-  touch $HOME/.zshrc
 fi
 
 if [[ ":$PATH:" != *":$HOME/.bin:"* ]]; then
@@ -32,11 +28,6 @@ fancy_echo() {
 }
 ### end common-components/shared-functions
 
-if ! grep -qiE 'precise|quantal|wheezy|raring|jessie|saucy' /etc/os-release; then
-  fancy_echo "Sorry! we don't currently support that distro."
-  exit 1
-fi
-### end linux-components/distro-check
 
 fancy_echo "Updating system packages ..."
   if command -v aptitude >/dev/null; then
@@ -52,29 +43,34 @@ fancy_echo "Updating system packages ..."
 fancy_echo "Installing git, for source control management ..."
   sudo aptitude install -y git
 
-fancy_echo "Installing base ruby build dependencies ..."
-  sudo aptitude build-dep -y ruby1.9.3
+fancy_echo "Installing ruby dependencies"
+sudo apt-get update
 
-fancy_echo "Installing libraries for common gem dependencies ..."
-  sudo aptitude install -y libxslt1-dev libcurl4-openssl-dev libksba8 libksba-dev libqtwebkit-dev libreadline-dev
+sudo apt-get install git-core curl zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev python-software-properties libffi-dev nodejs
 
 fancy_echo "Installing sqlite3, for prototyping database-backed rails apps"
  sudo aptitude install -y libsqlite3-dev sqlite3
 
 fancy_echo "Installing Postgres, a good open source relational database ..."
-  sudo aptitude install -y postgresql postgresql-server-dev-all
+sudo sh -c "echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
+wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install postgresql-common
+sudo apt-get install postgresql-9.5 libpq-dev
+sudo -u postgres createuser oday -s
+
+fancy_echo "Installing Mysql, another good open source relational database ..."
+  sudo apt-get install mysql-server mysql-client libmysqlclient-dev
 
 fancy_echo "Installing Redis, a good key-value database ..."
   sudo aptitude install -y redis-server
 
-fancy_echo "Installing ctags, to index files for vim tab completion of methods, classes, variables ..."
-  sudo aptitude install -y exuberant-ctags
-
 fancy_echo "Installing vim ..."
   sudo aptitude install -y vim-gtk
 
-fancy_echo "Installing tmux, to save project state and switch between projects ..."
-  sudo aptitude install -y tmux
+fancy_echo "Installing emacs "
+  sudo aptitude install -y emacs
+
 
 fancy_echo "Installing ImageMagick, to crop and resize images ..."
   sudo aptitude install -y imagemagick
@@ -85,62 +81,24 @@ fancy_echo "Installing watch, to execute a program periodically and show the out
 fancy_echo "Installing curl ..."
   sudo aptitude install -y curl
 
-fancy_echo "Installing zsh ..."
-  sudo aptitude install -y zsh
-
 fancy_echo "Installing node, to render the rails asset pipeline ..."
   sudo aptitude install -y nodejs
 ### end linux-components/debian-derivative-packages
 
-fancy_echo "Changing your shell to zsh ..."
-  chsh -s $(which zsh)
-### end common-components/zsh
+fancy_echo "installing rbenv from https://gorails.com/setup/ubuntu/16.04"
+cd
+git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+exec $SHELL
 
-if ! which ag &>/dev/null; then
-  fancy_echo "Installing The Silver Searcher (better than ack or grep) to search the contents of files ..."
-    git clone git://github.com/ggreer/the_silver_searcher.git /tmp/the_silver_searcher
-    sudo aptitude install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
-    sh /tmp/the_silver_searcher/build.sh
-    cd /tmp/the_silver_searcher
-    sh build.sh
-    sudo make install
-    cd
-    rm -rf /tmp/the_silver_searcher
-fi
-### end linux-components/silver-searcher-from-source
+git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> ~/.bashrc
+exec $SHELL
 
-if [[ ! -d "$HOME/.rbenv" ]]; then
-  fancy_echo "Installing rbenv, to change Ruby versions ..."
-    git clone git://github.com/sstephenson/rbenv.git ~/.rbenv
-
-    if ! grep -qs "rbenv init" ~/.zshrc; then
-      printf 'export PATH="$HOME/.rbenv/bin:$PATH"\n' >> ~/.zshrc
-      printf 'eval "$(rbenv init - --no-rehash)"\n' >> ~/.zshrc
-    fi
-
-    export PATH="$HOME/.rbenv/bin:$PATH"
-    eval "$(rbenv init -)"
-fi
-
-if [[ ! -d "$HOME/.rbenv/plugins/rbenv-gem-rehash" ]]; then
-  fancy_echo "Installing rbenv-gem-rehash so the shell automatically picks up binaries after installing gems with binaries..."
-    git clone https://github.com/sstephenson/rbenv-gem-rehash.git ~/.rbenv/plugins/rbenv-gem-rehash
-fi
-
-if [[ ! -d "$HOME/.rbenv/plugins/ruby-build" ]]; then
-  fancy_echo "Installing ruby-build, to install Rubies ..."
-    git clone git://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
-fi
-### end linux-components/rbenv
-
-RUBY_VERSION="2.1.1"
-
-fancy_echo "Installing Ruby $RUBY_VERSION ..."
-  rbenv install $RUBY_VERSION
-
-fancy_echo "Setting $RUBY_VERSION as global default Ruby ..."
-  rbenv global $RUBY_VERSION
-  rbenv rehash
+rbenv install 2.2.7
+rbenv global 2.2.7
+ruby -v
 
 fancy_echo "Updating to latest Rubygems version ..."
   gem update --system
@@ -154,29 +112,7 @@ fancy_echo "Configuring Bundler for faster, parallel gem installation ..."
   bundle config --global jobs $((number_of_cores - 1))
 ### end linux-components/bundler
 
-fancy_echo "Installing Suspenders, thoughtbot's Rails template ..."
-  gem install suspenders --no-document
-### end common-components/default-gems
-
-fancy_echo "Installing Heroku CLI client ..."
-  curl -s https://toolbelt.heroku.com/install-ubuntu.sh | sh
-
-fancy_echo "Installing the heroku-config plugin to pull config variables locally to be used as ENV variables ..."
-  heroku plugins:install git://github.com/ddollar/heroku-config.git
-### end linux-components/heroku
-
-fancy_echo "Installing GitHub CLI client ..."
-  curl http://hub.github.com/standalone -sLo ~/.bin/hub
-  chmod +x ~/.bin/hub
-### end linux-components/github
-
-fancy_echo "Installing rcm, to manage your dotfiles ..."
-  wget -O /tmp/rcm_1.1.0_all.deb http://mike-burns.com/project/rcm/rcm_1.1.0_all.deb
-  sudo dpkg -i /tmp/rcm_1.1.0_all.deb
-  rm -f /tmp/rcm_1.1.0_all.deb
-### end linux-components/rcm
-
-fancy_echo "Installing your personal additions from ~/.laptop.local ..."
-  [[ -f ~/.laptop.local ]] && source ~/.laptop.local
-### end common-components/personal-additions
-
+fancy_echo "Configureing Git"
+git config --global color.ui true
+git config --global user.name "Oliver Day"
+git config --global user.email "oday@vistahigherlearning.com"
