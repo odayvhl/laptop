@@ -1,0 +1,13 @@
+[Unit]
+Description=Job that runs Sidekick for UA
+
+[Service]
+Type=simple
+User=oday
+Group=oday
+WorkingDirectory=/home/oday/Code/ua
+ExecStart=/home/oday/.rbenv/shims/bundle exec sidekiq
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,13 @@
+[Unit]
+Description=Job that runs Sidekick for M3
+
+[Service]
+Type=simple
+User=oday
+Group=oday
+WorkingDirectory=/home/oday/Code/m3
+ExecStart=/home/oday/.rbenv/shims/bundle exec sidekiq
+
+[Install]
+WantedBy=multi-user.target
+

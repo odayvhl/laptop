@@ -1,0 +1,13 @@
+[Unit]
+Description=Job that runs Sidekick for API
+
+[Service]
+Type=simple
+User=oday
+Group=oday
+WorkingDirectory=/home/oday/Code/api
+ExecStart=/home/oday/.rbenv/shims/bundle exec sidekiq
+
+[Install]
+WantedBy=multi-user.target
+

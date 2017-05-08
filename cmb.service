@@ -1,0 +1,13 @@
+[Unit]
+Description=Job that runs cmb
+Documentation=man:cmb(1)
+
+[Service]
+Type=simple
+User=oday
+Group=oday
+WorkingDir=/home/oday/Code/cmb/docker
+ExecStart=/usr/local/bin/docker-compose --file /home/oday/Code/cmb/docker/docker-compose.yml up
+
+[Install]
+WantedBy=multi-user.target
