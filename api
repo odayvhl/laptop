@@ -1,0 +1,11 @@
+server {
+  listen 80;
+  server_name dev.api.vhlcentral.com;
+  access_log /var/log/nginx/api-access.log;
+  error_log /var/log/nginx/api-error.log;
+  root /home/oday/Code/api/public;
+  passenger_enabled on;
+  passenger_user oday;
+  passenger_ruby /home/oday/.rbenv/shims/ruby;
+  passenger_app_env development;
+}
